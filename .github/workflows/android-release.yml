@@ -36,15 +36,21 @@ jobs:
         run: ./gradlew assembleRelease --stacktrace
 
       - name: Sign Release APK
-        if: ${{ secrets.KEYSTORE_FILE != '' }}
+        if: ${{ env.KEYSTORE_FILE != '' }}
         id: sign_apk
         uses: r0adkll/sign-android-release@v1
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         with:
           releaseDirectory: app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.KEYSTORE_FILE }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        continue-on-error: true
 
       - name: Rename APKs
         run: |
@@ -91,7 +97,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-apks
           path: app/build/outputs/apk/**/*.apk

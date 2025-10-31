@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew lint --stacktrace
 
       - name: Upload Lint Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: lint-results
@@ -81,7 +81,7 @@ jobs:
         run: ./gradlew check --stacktrace
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
