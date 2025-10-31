@@ -106,44 +106,29 @@ git push origin v3.8
 
 ---
 
-## 🔐 Setup APK Signing (Optional)
+## 📦 APK Builds
 
-For signed release builds, configure these GitHub Secrets:
+All builds are **unsigned** by default. This is normal for open-source projects.
 
-### Generate Keystore
+### Build Types
+
+- **Debug APK**: For development and testing
+- **Release APK**: Unsigned production build
+
+### Manual Signing (If Needed)
+
+To sign APKs manually after download:
 
 ```bash
-keytool -genkey -v -keystore release-key.jks \
-  -alias your-key-alias \
-  -keyalg RSA -keysize 2048 \
-  -validity 10000
+# Sign using jarsigner
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
+  -keystore your-keystore.jks \
+  app-release-unsigned.apk \
+  your-key-alias
 
-# Convert to base64
-base64 release-key.jks > keystore.base64
+# Verify signature
+jarsigner -verify -verbose app-release-unsigned.apk
 ```
-
-### Add GitHub Secrets
-
-Go to: **Repository Settings > Secrets and variables > Actions**
-
-Add these secrets:
-
-| Secret Name | Value | Description |
-|-------------|-------|-------------|
-| `KEYSTORE_FILE` | Base64 content of keystore | Output from base64 command |
-| `KEY_ALIAS` | your-key-alias | Alias used when creating keystore |
-| `KEYSTORE_PASSWORD` | your-keystore-password | Keystore password |
-| `KEY_PASSWORD` | your-key-password | Key password |
-
-### Verify Signing
-
-After setting secrets:
-```bash
-git tag v3.8
-git push origin v3.8
-```
-
-Check GitHub Actions - release APK should be signed.
 
 ---
 
