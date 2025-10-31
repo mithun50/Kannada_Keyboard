@@ -61,5 +61,29 @@
     <string name="title_activity_news">newsActivity</string>
     <string name="title_activity_kannada_pada">KannadaPada</string>
 
+    <!-- Font Style Strings -->
+    <string name="font_style_title">ಫಾಂಟ್ ಶೈಲಿ ಆಯ್ಕೆ / Font Style</string>
+    <string name="font_style_description">Choose your preferred Kannada font style</string>
+    <string name="font_preview_text">ಕನ್ನಡ ಕೀಬೋರ್ಡ್</string>
+    <string name="font_apply_button">Apply Font</string>
+    <string name="font_changed_success">Font style changed successfully!</string>
+
+    <!-- Font Style Names -->
+    <string-array name="font_style_names">
+        <item>Default (System)</item>
+        <item>Regular Style</item>
+        <item>Bold Style</item>
+        <item>Serif Style</item>
+        <item>Traditional Style</item>
+    </string-array>
+
+    <!-- Font Style Values (must match font file names) -->
+    <string-array name="font_style_values">
+        <item>default</item>
+        <item>kannada_regular</item>
+        <item>kannada_bold</item>
+        <item>kannada_serif</item>
+        <item>kannada_kedage</item>
+    </string-array>
 
 </resources>

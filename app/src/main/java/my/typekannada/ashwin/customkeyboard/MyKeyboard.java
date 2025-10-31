@@ -1,19 +1,21 @@
 package my.typekannada.ashwin.customkeyboard;
 
 
+import android.graphics.Typeface;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+import android.widget.TextView;
 
 
 
 
 public class MyKeyboard extends InputMethodService
         implements KeyboardView.OnKeyboardActionListener{
-    private KeyboardView kv;
+    private CustomKeyboardView kv;
     private Keyboard keyboard;
     private Keyboard keyboard1;
     private Keyboard keyboard2;
@@ -24,7 +26,7 @@ public class MyKeyboard extends InputMethodService
     @Override
     public View onCreateInputView() {
 
-        kv = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
+        kv = (CustomKeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
         keyboard = new Keyboard(this, R.xml.kankey);
         keyboard1= new Keyboard(this,R.xml.kannum);
         keyboard2= new Keyboard(this,R.xml.langcha);
@@ -32,7 +34,24 @@ public class MyKeyboard extends InputMethodService
         keyboard5= new Keyboard(this,R.xml.engnum);
         kv.setKeyboard(keyboard);
         kv.setOnKeyboardActionListener(this);
+
+        // Apply custom font to keyboard
+        applyCustomFont();
+
         return kv;
+    }
+
+    private void applyCustomFont() {
+        try {
+            // Get selected font from preferences and apply to custom keyboard view
+            Typeface customFont = FontHelper.getSelectedFont(this);
+            if (customFont != null && kv != null) {
+                kv.setCustomTypeface(customFont);
+            }
+        } catch (Exception e) {
+            // Fallback to default if font loading fails
+            e.printStackTrace();
+        }
     }
 
 

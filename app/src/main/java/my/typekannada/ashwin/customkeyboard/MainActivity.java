@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,21 +14,28 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -53,11 +61,13 @@ import java.util.Calendar;
 public class MainActivity extends AppCompatActivity {
     private InterstitialAd interstitial;
     final String PREFS_NAME = "MyPrefsFile";
+    final String FONT_PREFS_KEY = "selected_font_style";
     CardView promo;
     private RewardedVideoAd mRewardedVideoAd;
     private ScrollView scroll;
     private FirebaseAnalytics mFirebaseAnalytics;
     LinearLayout ll1;
+    Button fontStyleButton;
 
 
     @Override
@@ -68,6 +78,15 @@ public class MainActivity extends AppCompatActivity {
 
         scroll = findViewById(R.id.scrollView);
         promo = findViewById(R.id.promos);
+        fontStyleButton = findViewById(R.id.fontStyleButton);
+
+        // Setup Font Style Button
+        fontStyleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showFontStyleDialog();
+            }
+        });
 
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-1924436259631090/6298664761");
 
@@ -188,5 +207,101 @@ public class MainActivity extends AppCompatActivity {
         j.setClassName("com.android.settings", "com.android.settings.LanguageSettings");
         startActivity(j);
 
+    }
+
+    private void showFontStyleDialog() {
+        // Inflate the custom dialog layout
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_font_selector, null);
+
+        // Get references to dialog components
+        final TextView previewText = dialogView.findViewById(R.id.fontPreviewText);
+        final Spinner fontSpinner = dialogView.findViewById(R.id.fontStyleSpinner);
+        Button applyButton = dialogView.findViewById(R.id.applyFontButton);
+
+        // Get font names and values from resources
+        final String[] fontNames = getResources().getStringArray(R.array.font_style_names);
+        final String[] fontValues = getResources().getStringArray(R.array.font_style_values);
+
+        // Setup spinner adapter
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+            android.R.layout.simple_spinner_item, fontNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        fontSpinner.setAdapter(adapter);
+
+        // Load current font selection
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String currentFont = prefs.getString(FONT_PREFS_KEY, "default");
+
+        // Set spinner to current selection
+        for (int i = 0; i < fontValues.length; i++) {
+            if (fontValues[i].equals(currentFont)) {
+                fontSpinner.setSelection(i);
+                break;
+            }
+        }
+
+        // Create the dialog
+        final AlertDialog dialog = new AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create();
+
+        // Handle font preview when spinner selection changes
+        fontSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedFont = fontValues[position];
+                applyFontToTextView(previewText, selectedFont);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // Handle apply button click
+        applyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int selectedPosition = fontSpinner.getSelectedItemPosition();
+                String selectedFont = fontValues[selectedPosition];
+
+                // Save to SharedPreferences
+                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString(FONT_PREFS_KEY, selectedFont);
+                editor.apply();
+
+                Toast.makeText(MainActivity.this,
+                    getString(R.string.font_changed_success),
+                    Toast.LENGTH_SHORT).show();
+
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void applyFontToTextView(TextView textView, String fontName) {
+        if (fontName.equals("default")) {
+            // Use system default font
+            textView.setTypeface(Typeface.DEFAULT);
+        } else {
+            try {
+                // Try to load custom font from res/font/
+                int fontId = getResources().getIdentifier(fontName, "font", getPackageName());
+                if (fontId != 0) {
+                    Typeface typeface = ResourcesCompat.getFont(this, fontId);
+                    textView.setTypeface(typeface);
+                } else {
+                    // Fallback to default if font not found
+                    textView.setTypeface(Typeface.DEFAULT);
+                }
+            } catch (Exception e) {
+                Log.e("FontError", "Error loading font: " + fontName, e);
+                textView.setTypeface(Typeface.DEFAULT);
+            }
+        }
     }
 }
